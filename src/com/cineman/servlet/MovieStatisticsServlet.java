@@ -1,8 +1,10 @@
 package com.cineman.servlet;
 
 import com.cineman.dao.InvoiceDAO;
+import com.cineman.dao.MovieDAO;
 import com.cineman.dao.StatisticsDAO;
 import com.cineman.model.Invoice;
+import com.cineman.model.Movie;
 import com.cineman.model.MovieStatistics;
 import com.cineman.model.ShowtimeStatistics;
 
@@ -28,11 +30,13 @@ import java.util.List;
 public class MovieStatisticsServlet extends HttpServlet {
     private StatisticsDAO statisticsDAO;
     private InvoiceDAO invoiceDAO;
+    private MovieDAO movieDAO;
 
     @Override
     public void init() throws ServletException {
         statisticsDAO = new StatisticsDAO();
         invoiceDAO = new InvoiceDAO();
+        movieDAO = new MovieDAO();
     }
 
     @Override
@@ -125,12 +129,12 @@ public class MovieStatisticsServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             int movieId = Integer.parseInt(movieIdStr);
-            List<ShowtimeStatistics> showtimeStats = statisticsDAO.getShowtimeRevenueByMovie(movieId, startDate, endDate);
 
-            if (!showtimeStats.isEmpty()) {
-                String movieTitle = showtimeStats.get(0).getMovieTitle();
-                request.setAttribute("movieTitle", movieTitle);
-            }
+            // Get movie title from database
+            Movie movie = movieDAO.getMovieById(movieId);
+            String movieTitle = (movie != null) ? movie.getTitle() : "Unknown Movie";
+
+            List<ShowtimeStatistics> showtimeStats = statisticsDAO.getShowtimeRevenueByMovie(movieId, startDate, endDate);
 
             // Calculate total revenue for this movie
             double totalRevenue = showtimeStats.stream()
@@ -139,6 +143,7 @@ public class MovieStatisticsServlet extends HttpServlet {
 
             request.setAttribute("level", 2);
             request.setAttribute("movieId", movieId);
+            request.setAttribute("movieTitle", movieTitle);
             request.setAttribute("showtimeStats", showtimeStats);
             request.setAttribute("totalRevenue", totalRevenue);
             request.getRequestDispatcher("/views/admin/movie-statistics.jsp").forward(request, response);

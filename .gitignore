@@ -31,6 +31,7 @@ bin/
 ### Docs ###
 BaoCao-CineMan-Full.md
 BaoCao-*.md
+*.md.backup
 *.pdf
 screenshots/
 docs/
